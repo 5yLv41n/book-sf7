@@ -1,0 +1,58 @@
+framework:
+    messenger:
+        default_bus: command.bus
+        buses:
+            command.bus:
+                middleware: 
+                    - validation
+            query.bus:
+                middleware:
+                    - validation
+            event.bus:
+                default_middleware:
+                    enabled: true
+                    # set "allow_no_handlers" to true (default is false) to allow having
+                    # no handler configured for this bus without throwing an exception
+                    allow_no_handlers: false
+                    # set "allow_no_senders" to false (default is true) to throw an exception
+                    # if no sender is configured for this bus
+                    allow_no_senders: true
+        transports:
+            book_transport:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    # librdkafka configuration options are available here
+                    # https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+                    metadata.broker.list: '%env(KAFKA_BROKERS)%'
+                    security.protocol: 'plaintext' # plaintext, ssl, sasl_plaintext, sasl_ssl
+                    group.id: 'my-group-id' # consumer group id
+                    auto.offset.reset: 'earliest' # 'earliest': start from the beginning
+                    enable.partition.eof: 'true' # Emit EOF event when reaching the end of a partition
+                    #allow.auto.create.topics: true # Allow automatic topic creation on the broker
+                    #ssl.certificate.location: ''
+                    message.send.max.retries: 5 # How many times to retry sending a failing Message
+
+                    # (not required, default false) if true then RD_KAFKA_MSG_F_BLOCK will apply
+                    # @see https://github.com/arnaud-lb/php-rdkafka/blob/6.x/README.md#producing-messages
+                    producer_message_flags_block: false
+
+                    # (not required, default -1 unassigned) the partition id
+                    # @see https://github.com/arnaud-lb/php-rdkafka/blob/6.x/README.md#producing-messages
+                    #producer_partition_id_assignment: 0
+                    #producer_poll_timeout_ms: 10 # (not required, default 0)
+                    #producer_flush_timeout_ms: 20000 # (not required, default 10000)
+                    producer_topic: 'book_topic'
+
+                    #consumer_consume_timeout_ms: 30000 # (not required, default 10000)
+                    consumer_topics:
+                        - 'book_topic'
+
+        routing:
+            App\Infrastructure\Messaging\Message\SaveAsyncBookMessage: book_transport
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+                book_transport: 'in-memory://'

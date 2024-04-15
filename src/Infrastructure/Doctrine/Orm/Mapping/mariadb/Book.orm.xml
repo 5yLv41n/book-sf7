@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="https://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://doctrine-project.org/schemas/orm/doctrine-mapping
+                          https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity repository-class="App\Infrastructure\Repository\MariaDbBookRepository"
+            name="App\Domain\Book\Book" table="book">
+
+        <indexes>
+            <index name="title_idx" columns="title"/>
+            <index name="isbn10_idx" columns="isbn10"/>
+            <index name="publicationDate_idx" columns="publicationDate"/>
+        </indexes>
+
+        <lifecycle-callbacks>
+            <lifecycle-callback type="prePersist" method="setCreatedAt"/>
+            <lifecycle-callback type="prePersist" method="setUpdatedAt"/>
+            <lifecycle-callback type="preUpdate" method="setUpdatedAt"/>
+        </lifecycle-callbacks>
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+        <field name="title" type="string" length="100" column="title" nullable="false"/>
+        <field name="isbn10" type="string" length="20" column="isbn10" nullable="false" unique="true"/>
+        <field name="isbn13" type="string" length="20" column="isbn13" nullable="true"/>
+        <field name="page" type="integer" column="page" nullable="true"/>
+        <field name="publicationDate" type="datetime_immutable" column="publicationDate" nullable="true"/>
+        <field name="createdAt" type="datetime_immutable" column="createdAt" nullable="false">
+            <options>
+                <option name="default">CURRENT_TIMESTAMP</option>
+            </options>
+        </field>
+        <field name="updatedAt" type="datetime_immutable" column="updatedAt" nullable="false">
+            <options>
+                <option name="default">CURRENT_TIMESTAMP</option>
+                <option name="ON UPDATE">CURRENT_TIMESTAMP</option>
+            </options>
+        </field>
+    </entity>
+</doctrine-mapping>

@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Tests;
+
+use App\Infrastructure\DTO\CreateBookDTO;
+use DateTimeImmutable;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+final class CreateBookControllerFunctionalTest extends WebTestCase
+{
+    /**
+     * @test
+     */
+    public function createBook(): void
+    {
+        $client = static::createClient();
+
+        $dto = $this->createDTO();
+        $parameters = (array) $dto;
+
+        $client->request(method: 'POST', uri: '/book', parameters: $parameters);
+
+        $this->assertResponseStatusCodeSame(expectedCode: 201);
+    }
+
+    private function createDTO(): CreateBookDTO
+    {
+        return new CreateBookDTO(
+            isbn10: '2100801163',
+            isbn13: '978-2100801169',
+            title: 'test',
+            page: 100,
+            publicationDate: (new DateTimeImmutable())->format('Y-m-d'),
+        );
+    }
+}

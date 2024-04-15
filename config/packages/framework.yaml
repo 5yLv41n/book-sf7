@@ -1,0 +1,35 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+    #csrf_protection: true
+
+    # Note that the session will be started ONLY if you read or write from it.
+    session: true
+
+    #esi: true
+    #fragments: true
+
+    http_client:
+        default_options:
+            retry_failed:
+                # retry_strategy: app.custom_strategy
+                http_codes:
+                    0: ['GET', 'HEAD']   # retry network errors if request method is GET or HEAD
+                    429: true            # retry all responses with 429 status code
+                    500: ['GET', 'HEAD']
+                max_retries: 50
+                delay: 500
+                multiplier: 3
+                max_delay: 5000
+                jitter: 0.3
+        scoped_clients:
+            open_library.client:
+                base_uri: '%env(string:OPEN_LIBRARY_BASE_URI)%'
+                headers:
+                    Accept: 'application/json'
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file

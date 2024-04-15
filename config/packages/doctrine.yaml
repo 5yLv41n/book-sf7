@@ -1,0 +1,70 @@
+doctrine:
+    dbal:
+        connections:
+            postgres:
+                host: '%env(string:POSTGRES_HOST)%'
+                port: '%env(string:POSTGRES_PORT)%'
+                dbname: '%env(string:POSTGRES_DB)%'
+                user: '%env(string:POSTGRES_USER)%'
+                password: '%env(string:POSTGRES_PASSWORD)%'
+                driver: 'pdo_pgsql'
+                server_version: '%env(string:POSTGRES_VERSION)%'
+                charset: '%env(string:POSTGRES_CHARSET)%'
+            mariadb:
+                host: '%env(string:MARIADB_HOST)%'
+                port: '%env(string:MARIADB_PORT)%'
+                dbname: '%env(string:MARIADB_DB)%'
+                user: '%env(string:MARIADB_USER)%'
+                password: '%env(string:MARIADB_PASSWORD)%'
+                driver: 'pdo_mysql'
+                server_version: '%env(string:MARIADB_VERSION)%'
+                charset: '%env(string:MARIADB_CHARSET)%'
+        default_connection: mariadb
+
+    orm:
+        default_entity_manager: postgres
+        entity_managers:
+            postgres:
+                connection: postgres
+                mappings:
+                    postgres:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Infrastructure/Doctrine/Orm/Mapping/postgres'
+                        prefix: 'App\Domain\Book'
+                        alias: Book
+                        type: xml
+            mariadb:
+                connection: mariadb
+                mappings:
+                    mariadb:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Infrastructure/Doctrine/Orm/Mapping/mariadb'
+                        prefix:  'App\Domain\Book'
+                        alias: Book
+                        type: xml
+
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system
